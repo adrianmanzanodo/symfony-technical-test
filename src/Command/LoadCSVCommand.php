@@ -7,6 +7,7 @@ use App\Entity\Director;
 use App\Entity\Peliculas;
 use DateTime;
 use Doctrine\Persistence\ManagerRegistry;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -20,11 +21,13 @@ class LoadCSVCommand extends Command
     protected static $defaultName = 'app:load-csv';
     private $projectDir;
     private $doctrine;
+    private $logger;
 
-    public function __construct(string $projectDir, ManagerRegistry $doctrine)
+    public function __construct(string $projectDir, ManagerRegistry $doctrine, LoggerInterface $logger)
     {
         $this->projectDir = $projectDir;
         $this->doctrine = $doctrine;
+        $this->logger = $logger;
         parent::__construct();
     }
 
@@ -35,16 +38,19 @@ class LoadCSVCommand extends Command
         $rows   = array_map('str_getcsv', file($pathFile));
         $header = array_shift($rows);
         $csv    = array();
+
+        $batchSize = 20;
+        $loopIndex = 0;
         foreach ($rows as $row) {
             $csv[] = array_combine($header, $row);
             $item = end($csv);
 
+            $date = DateTime::createFromFormat('Y-m-d', $item['date_published']);
+            $dateTime = $date instanceof DateTime ? $date : null;
+
             $pelicula = new Peliculas();
             $pelicula->setTitulo($item['title']);
-            $date = DateTime::createFromFormat('Y-m-d', $item['date_published']);
-            if ($date instanceof DateTime) {
-                $pelicula->setFechaPublicacion($date);
-            }
+            $pelicula->setFechaPublicacion($dateTime);
             $pelicula->setGenero($item['genre']);
             $pelicula->setDuracion($item['duration']);
             $pelicula->setProductora($item['production_company']);
@@ -61,8 +67,16 @@ class LoadCSVCommand extends Command
             $entityManager->persist($director);
             $pelicula->addDirector($director);
             $entityManager->persist($pelicula);
-            $entityManager->flush();
+
+            if (($loopIndex % $batchSize) === 0) {
+                $entityManager->flush();
+                $entityManager->clear(); // Detaches all objects from Doctrine!
+            }
+            $loopIndex++;
         }
+
+        $entityManager->flush();
+        $entityManager->clear();
 
         return Command::SUCCESS;
     }
