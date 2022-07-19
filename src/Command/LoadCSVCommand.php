@@ -8,6 +8,7 @@ use App\Entity\Peliculas;
 use DateTime;
 use Doctrine\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -71,12 +72,14 @@ class LoadCSVCommand extends Command
             if (($loopIndex % $batchSize) === 0) {
                 $entityManager->flush();
                 $entityManager->clear(); // Detaches all objects from Doctrine!
+                $this->logger->log(LogLevel::DEBUG, 'Working on insert data to database');
             }
             $loopIndex++;
         }
 
         $entityManager->flush();
         $entityManager->clear();
+        $this->logger->log(LogLevel::DEBUG, 'Data import finished');
 
         return Command::SUCCESS;
     }
