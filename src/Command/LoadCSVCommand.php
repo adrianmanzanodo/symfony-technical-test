@@ -42,31 +42,24 @@ class LoadCSVCommand extends Command
             $pelicula = new Peliculas();
             $pelicula->setTitulo($item['title']);
             $date = DateTime::createFromFormat('Y-m-d', $item['date_published']);
-            $pelicula->setFechaPublicacion($date);
+            if ($date instanceof DateTime) {
+                $pelicula->setFechaPublicacion($date);
+            }
             $pelicula->setGenero($item['genre']);
-            $pelicula->setGenero($item['duration']);
+            $pelicula->setDuracion($item['duration']);
             $pelicula->setProductora($item['production_company']);
 
             $actors = explode(',', $item['actors']);
             foreach ($actors as $tmpActor) {
                 $actor = new Actor();
                 $actor->setNombre($tmpActor);
-
                 $entityManager->persist($actor);
-                $entityManager->flush();
-
                 $pelicula->addActor($actor);
             }
-
             $director = new Director();
             $director->setNombre($item['director']);
-
             $entityManager->persist($director);
-            $entityManager->flush();
-            
             $pelicula->addDirector($director);
-
-
             $entityManager->persist($pelicula);
             $entityManager->flush();
         }

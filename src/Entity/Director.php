@@ -17,7 +17,7 @@ class Director
     #[ORM\Column(length: 255)]
     private ?string $nombre = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $fecha_nacimiento = null;
 
     #[ORM\ManyToOne(inversedBy: 'director')]

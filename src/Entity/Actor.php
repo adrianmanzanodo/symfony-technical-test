@@ -17,13 +17,13 @@ class Actor
     #[ORM\Column(length: 255)]
     private ?string $nombre = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $fecha_nacimiento = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[ORM\Column(type: Types::DATE_MUTABLE,  nullable: true)]
     private ?\DateTimeInterface $fecha_fallecimiento = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $lugar_nacimiento = null;
 
     #[ORM\ManyToOne(inversedBy: 'actor')]

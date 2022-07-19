@@ -25,7 +25,7 @@ class Peliculas
     #[ORM\Column(length: 50)]
     private ?string $genero = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?int $duracion = null;
 
     #[ORM\Column(length: 255)]
